@@ -1,0 +1,42 @@
+html,body{
+    min-width: 100vw;
+    min-height: 100vh;
+    height: 100vh;
+}
+.home{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+    
+}
+.Pages{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+    row-gap: 20px;
+}
+.Link{
+    width: 50%;
+
+}
+.Button{
+    width: 100%;
+    height: 50px;
+    font-size: x-large;
+    font-weight: 300;
+}
+#pageTitle{
+    font-weight: 400;
+}
+th{
+    font-weight: 600;
+    text-align: start;
+}

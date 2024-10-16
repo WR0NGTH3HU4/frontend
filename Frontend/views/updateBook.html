@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <title>Könyvek</title>
+</head>
+<body>
+
+    <div class="container newBooks">
+        <h2 class="text-center my-3 text-dark">Könyv módosítása</h2>
+        <form action="/newBook" method="post">
+
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" name="title" placeholder="Cím">
+                <label for="title">Cím</label>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" name="kiadas" placeholder="2024.10.16">
+                <label for="name">Kiadás dátuma</label>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" name="ISBN" placeholder="999-9-99-999999-9">
+                <label for="name">ISBN szám</label>
+            </div>
+
+            <div class="form-floating mb-3">
+                <select class="form-select" name="authorID" aria-label="">
+                    <!--Options-->
+                </select>
+                <label for="authorID">Szerzők</label>
+            </div>
+
+        </form>
+        <button class="btn btn-warning">Módosítás</button>
+        <a href="books.html" class="btn btn-secondary my-3">Vissza...</a>
+    </div>
+
+    <script src="../assets/js/bootstrap.min.js"></script>
+    <script src="../assets/js/app.js"></script>
+</body>
+</html>

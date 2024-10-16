@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <title>Könyvek</title>
+</head>
+<body>
+
+    <div class="container newBooks">
+        <h2 class="text-center my-3 text-dark">Új szerzők hozzáadása</h2>
+        <form action="/newBook" method="post">
+
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="authorName" name="name" placeholder="name">
+                <label for="authorName">Név</label>
+            </div>
+            
+            <div class="form-floating mb-3">
+                <input type="date" class="form-control" id="authorBirth" name="birth" placeholder="2024.10.16">
+                <label for="authorBirth">Születési dátum</label>
+            </div>
+
+        </form>
+        <button class="btn btn-success" onclick="pushAuthor()">Felvétel</button>
+        <a href="books.html" class="btn btn-secondary my-3">Vissza...</a>
+    </div>
+
+    <script src="../assets/js/bootstrap.min.js"></script>
+    <script src="../assets/js/app.js"></script>
+</body>
+</html>
