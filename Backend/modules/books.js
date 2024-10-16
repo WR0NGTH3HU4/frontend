@@ -3,28 +3,26 @@ const router = express.Router();
 const db = require('./database');
 const moment = require('moment');
 
+//új adat hozzáadása
 router.post('/', (req, res) => {
     const { title, release, ISBN, authorID } = req.body;
 
-    // Ellenőrizd, hogy a szükséges adatok megvannak-e
     if (!title || !release || !ISBN || !authorID) {
         return res.status(400).send('Kérlek, add meg az összes szükséges adatot!');
     }
 
-    // 1. Könyv hozzáadása a 'books' táblához
     const bookQuery = `
         INSERT INTO books (title, \`release\`, ISBN) 
         VALUES (?, ?, ?);
     `;
     db.query(bookQuery, [title, release, ISBN], (err, results) => {
         if (err) {
-            console.error(err); // Hiba kiírása a konzolra
+            console.error(err); 
             return res.status(500).send('Hiba történt a könyv hozzáadása közben!');
         }
 
         const newBookID = results.insertId;
 
-        // 2. Kapcsolat létrehozása a 'book_authors' táblában
         const bookAuthorQuery = `
             INSERT INTO book_authors (authID, bookID) 
             VALUES (?, ?);
@@ -35,13 +33,12 @@ router.post('/', (req, res) => {
                 return res.status(500).send('Hiba történt a könyv és az író összekapcsolása közben!');
             }
 
-            // 3. A könyv és író sikeres összekapcsolása után
             res.status(201).send({ message: 'Könyv sikeresen hozzáadva!', bookID: newBookID });
         });
     });
 });
 
-// Adatok lekérése
+//adatok betöltése
 router.get('/', (req, res) => {
     db.query(`
       SELECT 
@@ -71,6 +68,29 @@ router.get('/', (req, res) => {
   
       res.status(200).send(formattedResults);
       return;
+    });
+});
+
+// Szerző törlése
+router.delete('/:id', (req, res) => {
+    const authorID = req.params.id; 
+
+    if (!authorID) {
+        return res.status(400).send('Kérlek, add meg a törlendő könyv azonosítóját!');
+    }
+
+    const deleteQuery = `DELETE FROM books WHERE ID = ?`;
+    db.query(deleteQuery, [authorID], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Hiba történt a könyv törlése közben!');
+        }
+
+        if (results.affectedRows === 0) {
+            return res.status(404).send('A megadott könyv nem található!');
+        }
+
+        res.status(200).send({ message: 'Könyv sikeresen törölve!' });
     });
 });
 

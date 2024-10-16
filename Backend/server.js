@@ -8,7 +8,7 @@ const bookRoutes = require('./modules/books');
 const authRoutes = require('./modules/auth')
 
 app.use(cors());
-app.use(express.json()); // Ezt add hozzá a JSON adatok fogadásához
+app.use(express.json()); 
 
 // routes
 app.use('/books', bookRoutes);
