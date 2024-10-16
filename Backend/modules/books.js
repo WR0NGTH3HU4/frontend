@@ -3,35 +3,45 @@ const router = express.Router();
 const db = require('./database');
 const moment = require('moment');
 
-
-
-
 router.post('/', (req, res) => {
     const { title, release, ISBN, authorID } = req.body;
 
     // Ellenőrizd, hogy a szükséges adatok megvannak-e
-    if (!title || !release || !ISBN) {
+    if (!title || !release || !ISBN || !authorID) {
         return res.status(400).send('Kérlek, add meg az összes szükséges adatot!');
     }
 
-    const query = `
+    // 1. Könyv hozzáadása a 'books' táblához
+    const bookQuery = `
         INSERT INTO books (title, \`release\`, ISBN) 
         VALUES (?, ?, ?);
     `;
-    db.query(query, [title, release, ISBN], (err, results) => {
+    db.query(bookQuery, [title, release, ISBN], (err, results) => {
         if (err) {
             console.error(err); // Hiba kiírása a konzolra
             return res.status(500).send('Hiba történt a könyv hozzáadása közben!');
         }
 
-        // A könyv sikeres hozzáadása után
-        res.status(201).send({ message: 'Könyv sikeresen hozzáadva!', bookID: results.insertId });
+        const newBookID = results.insertId;
+
+        // 2. Kapcsolat létrehozása a 'book_authors' táblában
+        const bookAuthorQuery = `
+            INSERT INTO book_authors (authID, bookID) 
+            VALUES (?, ?);
+        `;
+        db.query(bookAuthorQuery, [authorID, newBookID], (err) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Hiba történt a könyv és az író összekapcsolása közben!');
+            }
+
+            // 3. A könyv és író sikeres összekapcsolása után
+            res.status(201).send({ message: 'Könyv sikeresen hozzáadva!', bookID: newBookID });
+        });
     });
 });
 
-
-
-//adatok lekérése
+// Adatok lekérése
 router.get('/', (req, res) => {
     db.query(`
       SELECT 
@@ -39,7 +49,7 @@ router.get('/', (req, res) => {
         books.release, 
         books.ISBN, 
         authors.name, 
-        authors.birth
+        authors.birth,
         book_authors.ID as id 
       FROM books
       JOIN book_authors ON books.ID = book_authors.bookID

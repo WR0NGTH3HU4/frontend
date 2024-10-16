@@ -11,7 +11,7 @@ router.get('/', (req, res) => {
         books.release, 
         books.ISBN, 
         authors.name, 
-        authors.birth
+        authors.birth,
       FROM books
       JOIN book_authors ON books.ID = book_authors.bookID
       JOIN authors ON book_authors.authID = authors.ID
