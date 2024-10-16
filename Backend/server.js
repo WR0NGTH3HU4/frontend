@@ -5,12 +5,14 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT;
 const bookRoutes = require('./modules/books');
+const authRoutes = require('./modules/auth')
 
 app.use(cors());
 app.use(express.json()); // Ezt add hozzá a JSON adatok fogadásához
 
 // routes
 app.use('/books', bookRoutes);
+app.use('/authors', authRoutes);
 
 // get API version
 app.get('/', (req, res) => {
