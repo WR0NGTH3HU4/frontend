@@ -1,26 +1,22 @@
-require('dotenv').config();
-var cors = require('cors');
 const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
+
 const app = express();
 const port = process.env.PORT;
-const stepRoutes = require('./modules/steps');
-const logger = require('./modules/logger');
+const bookRoutes = require('./modules/books');
 
-// middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.json()); // Ezt add hozzá a JSON adatok fogadásához
 
 // routes
-app.use('/users', userRoutes); 
-app.use('/steps', stepRoutes);
+app.use('/books', bookRoutes);
 
 // get API version
 app.get('/', (req, res) => {
-  res.send(`API version : ${process.env.VERSION}`);
+    res.send(`API version: ${process.env.VERSION}`);
 });
 
-
 app.listen(port, () => {
-  logger.info(`Server listening on port ${port}...`);
+    console.log(`Server listening on port ${port}...`);
 });
