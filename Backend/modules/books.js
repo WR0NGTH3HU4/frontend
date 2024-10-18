@@ -59,6 +59,7 @@ router.get('/', (req, res) => {
       }
   
       const formattedResults = results.map(result => ({
+        id: results.id,
         title: result.title,
         release: moment(result.release).format('YYYY-MM-DD'), 
         ISBN: result.ISBN,
@@ -71,7 +72,7 @@ router.get('/', (req, res) => {
     });
 });
 
-// Szerző törlése
+// Könyv törlése
 router.delete('/:id', (req, res) => {
     const authorID = req.params.id; 
 

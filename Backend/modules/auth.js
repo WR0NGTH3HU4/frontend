@@ -86,7 +86,35 @@ router.delete('/:id', (req, res) => {
         res.status(200).send({ message: 'Szerző sikeresen törölve!' });
     });
 });
+// Szerző részleges módosítása (PATCH)
+router.patch('/:id', (req, res) => {
+    const authorID = req.params.id;
+    const { name, birth } = req.body;
 
+    if (!name && !birth) {
+        return res.status(400).send('Kérlek, add meg a módosítandó adatokat!');
+    }
 
+    const updateQuery = `
+        UPDATE authors 
+        SET 
+            name = COALESCE(?, name), 
+            birth = COALESCE(?, birth) 
+        WHERE ID = ?;
+    `;
+
+    db.query(updateQuery, [name, birth, authorID], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Hiba történt a szerző módosítása közben!');
+        }
+
+        if (results.affectedRows === 0) {
+            return res.status(404).send('A megadott szerző nem található!');
+        }
+
+        res.status(200).send({ message: 'Szerző sikeresen módosítva!' });
+    });
+});
 
 module.exports = router;
