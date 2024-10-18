@@ -1,0 +1,1 @@
+npm i express , nodemon, mysql, moment, dotenv, cors

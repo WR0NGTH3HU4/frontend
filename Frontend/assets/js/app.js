@@ -44,7 +44,7 @@ function LoadBooks() {
                 updateBtn.textContent = "Módosítás";
                 updateBtn.classList.add('btn', 'btn-warning');
                 updateBtn.addEventListener('click', function(){
-                    // Módosítás funkció
+                    UpdateBook();
                 });
                 updateCell.appendChild(updateBtn);
                 row.appendChild(updateCell);
@@ -55,7 +55,12 @@ function LoadBooks() {
                 deleteBtn.textContent = "Törlés";
                 deleteBtn.classList.add('btn', 'btn-danger');
                 deleteBtn.addEventListener('click', function(){
-                    // Törlés funkció
+                    // Ellenőrizzük, hogy az 'id' mező létezik-e
+                    if (item.id && item.id !== 'undefined' && item.id !== null) {
+                        DeleteBook(item.id); // Átadjuk az id-t a törléshez
+                    } else {
+                        alert("Érvénytelen könyv azonosító!");
+                    }
                 });
                 deleteCell.appendChild(deleteBtn);
                 row.appendChild(deleteCell);
@@ -66,6 +71,8 @@ function LoadBooks() {
         }
     }
 }
+
+
 function LoadAuthors(){
     let xhrGet = new XMLHttpRequest();
     xhrGet.open('GET', 'http://localhost:3000/authors', true);
@@ -93,7 +100,7 @@ function LoadAuthors(){
                 updateBtn.textContent = "Módosítás";
                 updateBtn.classList.add('btn', 'btn-warning');
                 updateBtn.addEventListener('click', function(){
-                    // Módosítás funkció
+                    UpdateAuthors();
                 });
                 updateCell.appendChild(updateBtn);
                 row.appendChild(updateCell);
@@ -104,7 +111,7 @@ function LoadAuthors(){
                 deleteBtn.textContent = "Törlés";
                 deleteBtn.classList.add('btn', 'btn-danger');
                 deleteBtn.addEventListener('click', function(){
-                    // Törlés funkció
+                    DeleteAuthors();
                 });
                 deleteCell.appendChild(deleteBtn);
                 row.appendChild(deleteCell);
@@ -115,9 +122,7 @@ function LoadAuthors(){
         }
     }
 }
-function pushBook(){
 
-}
 function pushAuthor() {
     let authorName = document.querySelector('#authorName').value;
     let authorBirth = document.querySelector('#authorBirth').value;
@@ -205,5 +210,29 @@ function pushBook(){
                 alert(xhr.responseText);
             }
         }
+    }
+}
+
+function DeleteBook(bookID) {
+    if (!bookID) {
+        alert("Érvénytelen könyv azonosító!");
+        return;
+    }
+
+    if (confirm("Biztosan törölni szeretnéd ezt a könyvet?")) {
+        let xhr = new XMLHttpRequest();
+        xhr.open('DELETE', `http://localhost:3000/books/${bookID}`, true);  
+        xhr.send();
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4) {
+                if (xhr.status == 200) {
+                    alert("Könyv sikeresen törölve!");
+                    location.reload();  
+                } else {
+                    alert("Hiba történt a könyv törlésekor: " + xhr.responseText);
+                }
+            }
+        };
     }
 }

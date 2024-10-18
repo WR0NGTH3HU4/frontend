@@ -47,7 +47,7 @@ router.get('/', (req, res) => {
         books.ISBN, 
         authors.name, 
         authors.birth,
-        book_authors.ID as id 
+        book_authors.bookID as id 
       FROM books
       JOIN book_authors ON books.ID = book_authors.bookID
       JOIN authors ON book_authors.authID = authors.ID
@@ -57,41 +57,52 @@ router.get('/', (req, res) => {
         res.status(500).send('Hiba történt az adatbázis lekérés közben!');
         return;
       }
-  
+
+      // Ellenőrizd, hogy minden egyes elem tartalmazza-e az id-t
+      console.log(results);  // Debugging log
       const formattedResults = results.map(result => ({
-        id: results.id,
+        id: result.id,  // Gondoskodj róla, hogy itt az id legyen
         title: result.title,
-        release: moment(result.release).format('YYYY-MM-DD'), 
+        release: moment(result.release).format('YYYY-MM-DD'),
         ISBN: result.ISBN,
         authorName: result.name,
-        authorBirth: moment(result.birth).format('YYYY-MM-DD') 
+        authorBirth: moment(result.birth).format('YYYY-MM-DD')
       }));
-  
+
       res.status(200).send(formattedResults);
-      return;
     });
 });
 
 // Könyv törlése
 router.delete('/:id', (req, res) => {
-    const authorID = req.params.id; 
+    const bookID = req.params.id;
 
-    if (!authorID) {
+    if (!bookID) {
         return res.status(400).send('Kérlek, add meg a törlendő könyv azonosítóját!');
     }
 
-    const deleteQuery = `DELETE FROM books WHERE ID = ?`;
-    db.query(deleteQuery, [authorID], (err, results) => {
+    // Először töröljük a kapcsolódó könyv-szerző kapcsolatot
+    const deleteBookAuthorQuery = `DELETE FROM book_authors WHERE bookID = ?`;
+    db.query(deleteBookAuthorQuery, [bookID], (err) => {
         if (err) {
             console.error(err);
-            return res.status(500).send('Hiba történt a könyv törlése közben!');
+            return res.status(500).send('Hiba történt a könyv-szerző kapcsolat törlésében!');
         }
 
-        if (results.affectedRows === 0) {
-            return res.status(404).send('A megadott könyv nem található!');
-        }
+        // Ezután töröljük a könyvet
+        const deleteQuery = `DELETE FROM books WHERE ID = ?`;
+        db.query(deleteQuery, [bookID], (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Hiba történt a könyv törlése közben!');
+            }
 
-        res.status(200).send({ message: 'Könyv sikeresen törölve!' });
+            if (results.affectedRows === 0) {
+                return res.status(404).send('A megadott könyv nem található!');
+            }
+
+            res.status(200).send({ message: 'Könyv sikeresen törölve!' });
+        });
     });
 });
 
