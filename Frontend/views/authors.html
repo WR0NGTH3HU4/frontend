@@ -10,6 +10,44 @@
 <body>
 
     <div class="container books">
+
+        
+        <!--MOdal-->
+
+        <div class="modal" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Módosítás</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <form action="/newAuthor" method="post">
+
+                  <div class="form-floating mb-3">
+                      <input type="text" class="form-control" id="authorName" name="name" placeholder="name">
+                      <label for="authorName">Név</label>
+                  </div>
+                  
+                  <div class="form-floating mb-3">
+                      <input type="date" class="form-control" id="authorBirth" name="birth" placeholder="2024.10.16">
+                      <label for="authorBirth">Születési dátum</label>
+                  </div>
+        
+              </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="updateAuthor()">Módosítások mentése</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+        <!--Modal vége-->
+
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
             <div class="container-fluid">
               <a class="navbar-brand" href="../index.html">Home</a>

@@ -133,11 +133,11 @@ router.delete('/:id', (req, res) => {
 });
 
 // Könyv módosítása (PUT)
-router.put('/:id', (req, res) => {
+router.patch('/:id', (req, res) => {
     const bookID = req.params.id;
-    const { title, release, ISBN } = req.body;
+    const { title, release, ISBN, authorID } = req.body;
 
-    if (!title || !release || !ISBN) {
+    if (!title || !release || !ISBN || !authorID) {
         return res.status(400).send('Kérlek, add meg az összes szükséges adatot!');
     }
 
@@ -150,7 +150,6 @@ router.put('/:id', (req, res) => {
         WHERE ID = ?;
     `;
 
-
     db.query(updateQuery, [title, release, ISBN, bookID], (err, results) => {
         if (err) {
             console.error(err);
@@ -161,7 +160,14 @@ router.put('/:id', (req, res) => {
             return res.status(404).send('A megadott könyv nem található!');
         }
 
-        res.status(200).send({ message: 'A könyv sikeresen módosítva!' });
+        const updateAuthorQuery = `UPDATE book_authors SET authID = ? WHERE bookID = ?`;
+        db.query(updateAuthorQuery, [authorID, bookID], (err) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send(`Hiba történt a szerző módosítása közben: ${err.message}`);
+            }
+            res.status(200).send({ message: 'A könyv sikeresen módosítva!' });
+        });
     });
 });
 

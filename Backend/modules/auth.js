@@ -62,6 +62,42 @@ router.get('/', (req, res) => {
     });
 });
 
+// Szerző lekérése az ID alapján
+router.get('/:id', (req, res) => {
+    const authorID = req.params.id;
+
+    if (!authorID) {
+        return res.status(400).send('Kérlek, add meg a szerző azonosítóját!');
+    }
+
+    const query = `
+        SELECT 
+            authors.ID as id,
+            authors.name,
+            authors.birth
+        FROM authors 
+        WHERE ID = ?;
+    `;
+
+    db.query(query, [authorID], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Hiba történt az adatbázis lekérés közben!');
+        }
+
+        if (results.length === 0) {
+            return res.status(404).send('A megadott szerző nem található!');
+        }
+
+        const author = results[0];
+        res.status(200).send({
+            id: author.id,
+            authorName: author.name,
+            authorBirth: moment(author.birth).format('YYYY-MM-DD'),
+        });
+    });
+});
+
 // Szerző törlése
 router.delete('/:id', (req, res) => {
     const authorID = req.params.id; 

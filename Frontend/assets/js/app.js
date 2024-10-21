@@ -47,7 +47,7 @@ function LoadBooks() {
                     updateBtn.textContent = "Módosítás";
                     updateBtn.classList.add('btn', 'btn-warning');
                     updateBtn.addEventListener('click', function(){
-                        UpdateBook(item.id); 
+                        openUpdateModal(item.id);
                     });
                     updateCell.appendChild(updateBtn);
                     row.appendChild(updateCell);
@@ -82,6 +82,8 @@ function LoadAuthors() {
         if (xhrGet.readyState === 4 && xhrGet.status === 200) {
             let items = JSON.parse(xhrGet.responseText);
             
+            authorsTable.innerHTML = ''; // Clear the table before adding new rows
+
             items.forEach(item => {
                 let row = document.createElement('tr');
                 
@@ -99,7 +101,7 @@ function LoadAuthors() {
                 updateBtn.textContent = "Módosítás";
                 updateBtn.classList.add('btn', 'btn-warning');
                 updateBtn.addEventListener('click', function () {
-                    UpdateAuthors(item.id);  // Make sure UpdateAuthors function is defined
+                    openAuthorUpdateModal(item.id);  // Open modal with author data
                 });
                 updateCell.appendChild(updateBtn);
                 row.appendChild(updateCell);
@@ -121,7 +123,6 @@ function LoadAuthors() {
         }
     }
 }
-
 
 //POST functions
 function pushAuthor() {
@@ -155,28 +156,32 @@ function pushAuthor() {
     }
 }
 
-function getAuthorID(){
-    
-    let select = document.querySelector('select');
-    
+function getAuthorID(selectedAuthorId = null) {
+    let select = document.querySelector('select[name="authorID"]');
+    select.innerHTML = ''; 
+
     let xhrGet = new XMLHttpRequest();
     xhrGet.open('GET', 'http://localhost:3000/authors', true);
     xhrGet.send();
-    
+
     xhrGet.onreadystatechange = function() {
         if (xhrGet.readyState === 4 && xhrGet.status === 200) {
             let items = JSON.parse(xhrGet.responseText);
 
             items.forEach(item => {
-
                 let option = document.createElement("option");
                 option.value = item.id;
                 option.textContent = item.authorName;
 
+            
+                if (item.id === selectedAuthorId) {
+                    option.selected = true;
+                }
+
                 select.appendChild(option);
             });
         }
-    }
+    };
 }
 
 function pushBook(){
@@ -264,3 +269,132 @@ function DeleteAuthors(authorID) {
 }
 
 //PATCH functions
+function openUpdateModal(bookID) {
+    let xhrGet = new XMLHttpRequest();
+    xhrGet.open('GET', `http://localhost:3000/books/${bookID}`, true);
+    xhrGet.send();
+
+    xhrGet.onreadystatechange = function() {
+        if (xhrGet.readyState === 4 && xhrGet.status === 200) {
+            let book = JSON.parse(xhrGet.responseText);
+    
+            document.querySelector('#title').value = book.title;
+            document.querySelector('#release').value = book.release;
+            document.querySelector('#ISBN').value = book.ISBN;
+
+   
+            getAuthorID(book.authorID);
+
+
+            let modal = new bootstrap.Modal(document.querySelector('.modal'));
+            modal.show();
+
+            document.querySelector('.modal-footer .btn-primary').onclick = function() {
+                updateBook(bookID);
+            };
+        } else if (xhrGet.readyState === 4) {
+            console.error('Hiba történt a könyv betöltésekor: ', xhrGet.responseText);
+        }
+    };
+}
+
+
+function updateBook(bookID) {
+    let title = document.querySelector('#title').value;
+    let release = document.querySelector('#release').value;
+    let ISBN = document.querySelector('#ISBN').value;
+    let authorID = document.querySelector('select[name="authorID"]').value;
+
+    if (!title || !release || !ISBN) {
+        alert('Kérlek, töltsd ki a mezőket!');
+        return;
+    }
+
+    var data = JSON.stringify({
+        title: title,
+        release: release,
+        ISBN: ISBN,
+        authorID: authorID
+    });
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('PATCH', `http://localhost:3000/books/${bookID}`, true); 
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.send(data);
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+            if (xhr.status == 200) {
+                alert("Könyv módosítva!");
+                location.reload(); 
+            } else {
+                alert(xhr.responseText);
+            }
+        }
+    };
+}
+
+function openAuthorUpdateModal(authorID) {
+    let xhrGet = new XMLHttpRequest();
+    xhrGet.open('GET', `http://localhost:3000/authors/${authorID}`, true);
+    xhrGet.send();
+
+    xhrGet.onreadystatechange = function() {
+        if (xhrGet.readyState === 4 && xhrGet.status === 200) {
+            let author = JSON.parse(xhrGet.responseText);
+            
+           
+            document.querySelector('#authorName').value = author.authorName;
+            document.querySelector('#authorBirth').value = author.authorBirth;
+
+          
+            let modal = new bootstrap.Modal(document.querySelector('.modal'));
+            modal.show();
+
+            document.querySelector('.modal-footer .btn-primary').onclick = function() {
+                updateAuthor(authorID);
+            };
+        } else if (xhrGet.readyState === 4) {
+            console.error('Hiba történt a szerző betöltésekor: ', xhrGet.responseText);
+        }
+    };
+}
+
+
+function updateAuthor(authorID) {
+    let authorName = document.querySelector('#authorName').value;
+    let authorBirth = document.querySelector('#authorBirth').value;
+
+    if (!authorName || !authorBirth) {
+        alert('Kérlek, töltsd ki a mezőket!');
+        return;
+    }
+
+    var data = JSON.stringify({
+        name: authorName,
+        birth: authorBirth
+    });
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('PUT', `http://localhost:3000/authors/${authorID}`, true); 
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.send(data);
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+            if (xhr.status == 200) {
+                alert("Szerző módosítva!");
+                location.reload(); 
+            } else {
+                alert(xhr.responseText);
+            }
+        }
+    };
+}
+
+let updateBtn = document.createElement('button');
+updateBtn.textContent = "Módosítás";
+updateBtn.classList.add('btn', 'btn-warning');
+updateBtn.addEventListener('click', function(){
+    openUpdateModal(item.id);  
+});
