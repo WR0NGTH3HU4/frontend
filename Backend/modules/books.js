@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('./database');
 const moment = require('moment');
 
-//új adat hozzáadása
+// Új adat hozzáadása
 router.post('/', (req, res) => {
     const { title, release, ISBN, authorID } = req.body;
 
@@ -18,7 +18,7 @@ router.post('/', (req, res) => {
     db.query(bookQuery, [title, release, ISBN], (err, results) => {
         if (err) {
             console.error(err); 
-            return res.status(500).send('Hiba történt a könyv hozzáadása közben!');
+            return res.status(500).send(`Hiba történt a könyv hozzáadása közben: ${err.message}`);
         }
 
         const newBookID = results.insertId;
@@ -30,7 +30,7 @@ router.post('/', (req, res) => {
         db.query(bookAuthorQuery, [authorID, newBookID], (err) => {
             if (err) {
                 console.error(err);
-                return res.status(500).send('Hiba történt a könyv és az író összekapcsolása közben!');
+                return res.status(500).send(`Hiba történt a könyv és az író összekapcsolása közben: ${err.message}`);
             }
 
             res.status(201).send({ message: 'Könyv sikeresen hozzáadva!', bookID: newBookID });
@@ -38,7 +38,7 @@ router.post('/', (req, res) => {
     });
 });
 
-//adatok betöltése
+// Adatok betöltése
 router.get('/', (req, res) => {
     db.query(`
       SELECT 
@@ -47,29 +47,65 @@ router.get('/', (req, res) => {
         books.ISBN, 
         authors.name, 
         authors.birth,
-        book_authors.bookID as id 
+        book_authors.ID as id 
       FROM books
       JOIN book_authors ON books.ID = book_authors.bookID
       JOIN authors ON book_authors.authID = authors.ID
     `, (err, results) => {
       if (err) {
         console.error(err);
-        res.status(500).send('Hiba történt az adatbázis lekérés közben!');
-        return;
+        return res.status(500).send('Hiba történt az adatbázis lekérés közben!');
       }
-
-      // Ellenőrizd, hogy minden egyes elem tartalmazza-e az id-t
-      console.log(results);  // Debugging log
+  
       const formattedResults = results.map(result => ({
-        id: result.id,  // Gondoskodj róla, hogy itt az id legyen
+        id: result.id,
         title: result.title,
-        release: moment(result.release).format('YYYY-MM-DD'),
+        release: moment(result.release).format('YYYY-MM-DD'), 
         ISBN: result.ISBN,
         authorName: result.name,
-        authorBirth: moment(result.birth).format('YYYY-MM-DD')
+        authorBirth: moment(result.birth).format('YYYY-MM-DD') 
       }));
-
+  
       res.status(200).send(formattedResults);
+    });
+});
+
+// Könyv lekérése ID alapján
+router.get('/:id', (req, res) => {
+    const bookID = req.params.id;
+
+    db.query(`
+        SELECT 
+            books.title, 
+            books.release, 
+            books.ISBN, 
+            authors.name, 
+            authors.birth
+        FROM books
+        JOIN book_authors ON books.ID = book_authors.bookID
+        JOIN authors ON book_authors.authID = authors.ID
+        WHERE books.ID = ?
+    `, [bookID], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Hiba történt az adatbázis lekérés közben!');
+        }
+
+        if (results.length === 0) {
+            return res.status(404).send('A megadott könyv nem található!');
+        }
+
+        const result = results[0];
+        const formattedResult = {
+            id: result.id,
+            title: result.title,
+            release: moment(result.release).format('YYYY-MM-DD'),
+            ISBN: result.ISBN,
+            authorName: result.name,
+            authorBirth: moment(result.birth).format('YYYY-MM-DD')
+        };
+
+        res.status(200).send(formattedResult);
     });
 });
 
@@ -81,28 +117,51 @@ router.delete('/:id', (req, res) => {
         return res.status(400).send('Kérlek, add meg a törlendő könyv azonosítóját!');
     }
 
-    // Először töröljük a kapcsolódó könyv-szerző kapcsolatot
-    const deleteBookAuthorQuery = `DELETE FROM book_authors WHERE bookID = ?`;
-    db.query(deleteBookAuthorQuery, [bookID], (err) => {
+    const deleteQuery = `DELETE FROM books WHERE ID = ?`;
+    db.query(deleteQuery, [bookID], (err, results) => {
         if (err) {
             console.error(err);
-            return res.status(500).send('Hiba történt a könyv-szerző kapcsolat törlésében!');
+            return res.status(500).send('Hiba történt a könyv törlése közben!');
         }
 
-        // Ezután töröljük a könyvet
-        const deleteQuery = `DELETE FROM books WHERE ID = ?`;
-        db.query(deleteQuery, [bookID], (err, results) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).send('Hiba történt a könyv törlése közben!');
-            }
+        if (results.affectedRows === 0) {
+            return res.status(404).send('A megadott könyv nem található!');
+        }
 
-            if (results.affectedRows === 0) {
-                return res.status(404).send('A megadott könyv nem található!');
-            }
+        res.status(200).send({ message: 'Könyv sikeresen törölve!' });
+    });
+});
 
-            res.status(200).send({ message: 'Könyv sikeresen törölve!' });
-        });
+// Könyv módosítása (PUT)
+router.put('/:id', (req, res) => {
+    const bookID = req.params.id;
+    const { title, release, ISBN } = req.body;
+
+    if (!title || !release || !ISBN) {
+        return res.status(400).send('Kérlek, add meg az összes szükséges adatot!');
+    }
+
+    const updateQuery = `
+        UPDATE books 
+        SET 
+            title = ?, 
+            \`release\` = ?,
+            ISBN = ?
+        WHERE ID = ?;
+    `;
+
+
+    db.query(updateQuery, [title, release, ISBN, bookID], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send(`Hiba történt a könyv módosítása közben: ${err.message}`);
+        }
+
+        if (results.affectedRows === 0) {
+            return res.status(404).send('A megadott könyv nem található!');
+        }
+
+        res.status(200).send({ message: 'A könyv sikeresen módosítva!' });
     });
 });
 

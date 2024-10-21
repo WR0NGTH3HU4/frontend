@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('./database');
 const moment = require('moment');
 
-//új adat hozzáadása
+// Új adat hozzáadása
 router.post('/', (req, res) => {
     const { name, birth, bookID } = req.body;
 
@@ -38,29 +38,27 @@ router.post('/', (req, res) => {
     });
 });
 
-//adatok lekérése
+// Adatok lekérése (minden szerző)
 router.get('/', (req, res) => {
     db.query(`
-      SELECT
-        authors.ID as id,
-        authors.name, 
-        authors.birth
-      FROM authors
+        SELECT
+            authors.ID as id,
+            authors.name, 
+            authors.birth
+        FROM authors
     `, (err, results) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send('Hiba történt az adatbázis lekérés közben!');
-        return;
-      }
-  
-      const formattedResults = results.map(result => ({
-        id: result.id,
-        authorName: result.name,
-        authorBirth: moment(result.birth).format('YYYY-MM-DD'), 
-      }));
-  
-      res.status(200).send(formattedResults);
-      return;
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Hiba történt az adatbázis lekérés közben!');
+        }
+
+        const formattedResults = results.map(result => ({
+            id: result.id,
+            authorName: result.name,
+            authorBirth: moment(result.birth).format('YYYY-MM-DD'), 
+        }));
+
+        res.status(200).send(formattedResults);
     });
 });
 
@@ -86,20 +84,21 @@ router.delete('/:id', (req, res) => {
         res.status(200).send({ message: 'Szerző sikeresen törölve!' });
     });
 });
-// Szerző részleges módosítása (PATCH)
-router.patch('/:id', (req, res) => {
+
+// Szerző módosítása (PUT)
+router.put('/:id', (req, res) => {
     const authorID = req.params.id;
     const { name, birth } = req.body;
 
-    if (!name && !birth) {
-        return res.status(400).send('Kérlek, add meg a módosítandó adatokat!');
+    if (!name || !birth) {
+        return res.status(400).send('Kérlek, add meg az összes szükséges adatot!');
     }
 
     const updateQuery = `
         UPDATE authors 
         SET 
-            name = COALESCE(?, name), 
-            birth = COALESCE(?, birth) 
+            name = ?, 
+            birth = ? 
         WHERE ID = ?;
     `;
 

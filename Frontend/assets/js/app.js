@@ -1,84 +1,84 @@
 let booksTable = document.querySelector('.booksTable');
 let authorsTable = document.querySelector('.authorsTable');
 
+//GET functions
 function LoadBooks() {
     let xhrGet = new XMLHttpRequest();
     xhrGet.open('GET', 'http://localhost:3000/books', true);
     xhrGet.send();
 
     xhrGet.onreadystatechange = function() {
-        if (xhrGet.readyState === 4 && xhrGet.status === 200) {
-            let items = JSON.parse(xhrGet.responseText);
-            
-            items.forEach(item => {
-                let row = document.createElement('tr');
-                
-                // Cím cella
-                let titleCell = document.createElement('td');
-                titleCell.textContent = item.title;
-                row.appendChild(titleCell);
-                
-                // Kiadás dátuma cella
-                let dateCell = document.createElement('td');
-                dateCell.textContent = item.release;
-                row.appendChild(dateCell);
-                
-                // ISBN cella
-                let isbnCell = document.createElement('td');
-                isbnCell.textContent = item.ISBN;
-                row.appendChild(isbnCell);
-                
-                // Szerző neve cella
-                let authorCell = document.createElement('td');
-                authorCell.textContent = item.authorName;
-                row.appendChild(authorCell);
-                
-                // Szerző születési dátuma cella
-                let birthDateCell = document.createElement('td');
-                birthDateCell.textContent = item.authorBirth;
-                row.appendChild(birthDateCell);
-                
-                // Módosítás gomb
-                let updateCell = document.createElement('td');
-                let updateBtn = document.createElement('button');
-                updateBtn.textContent = "Módosítás";
-                updateBtn.classList.add('btn', 'btn-warning');
-                updateBtn.addEventListener('click', function(){
-                    UpdateBook();
-                });
-                updateCell.appendChild(updateBtn);
-                row.appendChild(updateCell);
+        if (xhrGet.readyState === 4) {
+            if (xhrGet.status === 200) {
+                let items = JSON.parse(xhrGet.responseText);
+                booksTable.innerHTML = ''; // Töröld a táblázat tartalmát, mielőtt új sorokat hozzáadsz
 
-                // Törlés gomb
-                let deleteCell = document.createElement('td');
-                let deleteBtn = document.createElement('button');
-                deleteBtn.textContent = "Törlés";
-                deleteBtn.classList.add('btn', 'btn-danger');
-                deleteBtn.addEventListener('click', function(){
-                    // Ellenőrizzük, hogy az 'id' mező létezik-e
-                    if (item.id && item.id !== 'undefined' && item.id !== null) {
-                        DeleteBook(item.id); // Átadjuk az id-t a törléshez
-                    } else {
-                        alert("Érvénytelen könyv azonosító!");
-                    }
+                items.forEach(item => {
+                    let row = document.createElement('tr');
+
+                    // Cím cella
+                    let titleCell = document.createElement('td');
+                    titleCell.textContent = item.title;
+                    row.appendChild(titleCell);
+
+                    // Kiadás dátuma cella
+                    let dateCell = document.createElement('td');
+                    dateCell.textContent = item.release;
+                    row.appendChild(dateCell);
+
+                    // ISBN cella
+                    let isbnCell = document.createElement('td');
+                    isbnCell.textContent = item.ISBN;
+                    row.appendChild(isbnCell);
+
+                    // Szerző neve cella
+                    let authorCell = document.createElement('td');
+                    authorCell.textContent = item.authorName;
+                    row.appendChild(authorCell);
+
+                    // Szerző születési dátuma cella
+                    let birthDateCell = document.createElement('td');
+                    birthDateCell.textContent = item.authorBirth;
+                    row.appendChild(birthDateCell);
+
+                    // Módosítás gomb
+                    let updateCell = document.createElement('td');
+                    let updateBtn = document.createElement('button');
+                    updateBtn.textContent = "Módosítás";
+                    updateBtn.classList.add('btn', 'btn-warning');
+                    updateBtn.addEventListener('click', function(){
+                        UpdateBook(item.id); 
+                    });
+                    updateCell.appendChild(updateBtn);
+                    row.appendChild(updateCell);
+
+                    // Törlés gomb
+                    let deleteCell = document.createElement('td');
+                    let deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = "Törlés";
+                    deleteBtn.classList.add('btn', 'btn-danger');
+                    deleteBtn.addEventListener('click', function(){
+                        DeleteBook(item.id); 
+                    });
+                    deleteCell.appendChild(deleteBtn);
+                    row.appendChild(deleteCell);
+
+                    // Sor hozzáadása a táblához
+                    booksTable.appendChild(row);
                 });
-                deleteCell.appendChild(deleteBtn);
-                row.appendChild(deleteCell);
-                
-                // Sor hozzáadása a táblához
-                booksTable.appendChild(row);
-            });
+            } else {
+                console.error('Hiba történt a könyvek betöltésekor: ', xhrGet.responseText);
+            }
         }
     }
 }
 
-
-function LoadAuthors(){
+function LoadAuthors() {
     let xhrGet = new XMLHttpRequest();
     xhrGet.open('GET', 'http://localhost:3000/authors', true);
     xhrGet.send();
 
-    xhrGet.onreadystatechange = function() {
+    xhrGet.onreadystatechange = function () {
         if (xhrGet.readyState === 4 && xhrGet.status === 200) {
             let items = JSON.parse(xhrGet.responseText);
             
@@ -93,14 +93,13 @@ function LoadAuthors(){
                 birthCell.textContent = item.authorBirth;
                 row.appendChild(birthCell);
                 
-                
                 // Módosítás gomb
                 let updateCell = document.createElement('td');
                 let updateBtn = document.createElement('button');
                 updateBtn.textContent = "Módosítás";
                 updateBtn.classList.add('btn', 'btn-warning');
-                updateBtn.addEventListener('click', function(){
-                    UpdateAuthors();
+                updateBtn.addEventListener('click', function () {
+                    UpdateAuthors(item.id);  // Make sure UpdateAuthors function is defined
                 });
                 updateCell.appendChild(updateBtn);
                 row.appendChild(updateCell);
@@ -110,8 +109,8 @@ function LoadAuthors(){
                 let deleteBtn = document.createElement('button');
                 deleteBtn.textContent = "Törlés";
                 deleteBtn.classList.add('btn', 'btn-danger');
-                deleteBtn.addEventListener('click', function(){
-                    DeleteAuthors();
+                deleteBtn.addEventListener('click', function () {
+                    DeleteAuthors(item.id);  // Use the correct ID for deletion
                 });
                 deleteCell.appendChild(deleteBtn);
                 row.appendChild(deleteCell);
@@ -123,6 +122,8 @@ function LoadAuthors(){
     }
 }
 
+
+//POST functions
 function pushAuthor() {
     let authorName = document.querySelector('#authorName').value;
     let authorBirth = document.querySelector('#authorBirth').value;
@@ -213,6 +214,7 @@ function pushBook(){
     }
 }
 
+// DELETE  functions
 function DeleteBook(bookID) {
     if (!bookID) {
         alert("Érvénytelen könyv azonosító!");
@@ -236,3 +238,29 @@ function DeleteBook(bookID) {
         };
     }
 }
+
+function DeleteAuthors(authorID) {
+    if (!authorID) {
+        alert("Érvénytelen szerző azonosító!");
+        return;
+    }
+
+    if (confirm("Biztosan törölni szeretnéd ezt a szerzőt?")) {
+        let xhr = new XMLHttpRequest();
+        xhr.open('DELETE', `http://localhost:3000/authors/${authorID}`, true);  
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                if (xhr.status == 200) {
+                    alert("Szerző sikeresen törölve!");
+                    location.reload();  
+                } else {
+                    alert("Hiba történt a szerző törlésekor: " + xhr.responseText);
+                }
+            }
+        };
+    }
+}
+
+//PATCH functions

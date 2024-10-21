@@ -12,6 +12,7 @@ app.use(express.json());
 
 // routes
 app.use('/books', bookRoutes);
+
 app.use('/authors', authRoutes);
 
 // get API version
